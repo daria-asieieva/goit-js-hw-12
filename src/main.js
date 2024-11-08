@@ -7,10 +7,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('.search-form');
     const loadMoreButton = document.querySelector('.load-more');
     const gallery = new SimpleLightbox('.gallery a');
-    
+
     let currentPage = 1;
     let currentQuery = '';
     const perPage = 15;
+
+    const hideLoadMoreButton = () => (loadMoreButton.style.display = 'none');
+    const showLoadMoreButton = () => (loadMoreButton.style.display = 'block');
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -23,22 +26,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         clearGallery();
         toggleLoader(true);
-        loadMoreButton.style.display = 'none';
+        hideLoadMoreButton();
         currentPage = 1;
 
         try {
             const data = await fetchImages(currentQuery, currentPage, perPage);
-            if (data.hits.length === 0) {
+            if (!data.hits || data.hits.length === 0) {
                 showNotification('Sorry, there are no images matching your search query. Please try again!');
             } else {
                 renderImages(data.hits);
                 gallery.refresh();
                 if (data.totalHits > perPage) {
-                    loadMoreButton.style.display = 'block';
+                    showLoadMoreButton();
                 }
             }
         } catch (error) {
-            showNotification('An error occurred while fetching images. Please try again.');
+            const errorMessage = error.response
+                ? 'An error occurred while fetching images. Please check your connection and try again.'
+                : 'An error occurred while fetching images. Please try again later.';
+            showNotification(errorMessage);
         } finally {
             toggleLoader(false);
         }
@@ -47,21 +53,26 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMoreButton.addEventListener('click', async () => {
         currentPage += 1;
         toggleLoader(true);
+        hideLoadMoreButton();
 
         try {
             const data = await fetchImages(currentQuery, currentPage, perPage);
-            renderImages(data.hits);
-            gallery.refresh();
+            if (data.hits && data.hits.length > 0) {
+                appendImages(data.hits);
+                gallery.refresh();
 
-            const totalFetched = currentPage * perPage;
-            if (totalFetched >= data.totalHits) {
-                loadMoreButton.style.display = 'none';
-                showNotification("We're sorry, but you've reached the end of search results.");
+                const totalFetched = currentPage * perPage;
+                if (totalFetched >= data.totalHits) {
+                    showNotification("We're sorry, but you've reached the end of search results.");
+                } else {
+                    showLoadMoreButton();
+                    window.scrollBy({
+                        top: document.querySelector('.gallery').lastElementChild.getBoundingClientRect().height * 2,
+                        behavior: 'smooth'
+                    });
+                }
             } else {
-                window.scrollBy({
-                    top: document.querySelector('.gallery').firstElementChild.getBoundingClientRect().height * 2,
-                    behavior: 'smooth'
-                });
+                showNotification("We're sorry, but you've reached the end of search results.");
             }
         } catch (error) {
             showNotification('An error occurred while loading more images. Please try again.');
@@ -70,3 +81,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+function appendImages(images) {
+    const gallery = document.querySelector('.gallery');
+    if (!gallery) return;
+
+    gallery.insertAdjacentHTML(
+        'beforeend',
+        images.map(image => `
+            <a href="${image.largeImageURL}" class="gallery__link">
+                <div class="gallery__item">
+                    <img src="${image.webformatURL}" alt="${image.tags}" loading="lazy" />
+                    <div class="gallery__info">
+                        <p><b>Likes:</b> ${image.likes}</p>
+                        <p><b>Views:</b> ${image.views}</p>
+                        <p><b>Comments:</b> ${image.comments}</p>
+                        <p><b>Downloads:</b> ${image.downloads}</p>
+                    </div>
+                </div>
+            </a>
+        `).join('')
+    );
+}
