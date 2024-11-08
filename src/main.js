@@ -41,10 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (error) {
-            const errorMessage = error.response
-                ? 'An error occurred while fetching images. Please check your connection and try again.'
-                : 'An error occurred while fetching images. Please try again later.';
-            showNotification(errorMessage);
+            showNotification('An error occurred while fetching images. Please try again later.');
         } finally {
             toggleLoader(false);
         }
@@ -66,9 +63,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     showNotification("We're sorry, but you've reached the end of search results.");
                 } else {
                     showLoadMoreButton();
+
+                    // Реалізація плавного скролу
+                    const { height: cardHeight } = document
+                        .querySelector('.gallery')
+                        .firstElementChild.getBoundingClientRect();
+
                     window.scrollBy({
-                        top: document.querySelector('.gallery').lastElementChild.getBoundingClientRect().height * 2,
-                        behavior: 'smooth'
+                        top: cardHeight * 2,
+                        behavior: 'smooth',
                     });
                 }
             } else {
