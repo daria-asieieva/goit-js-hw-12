@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = await fetchImages(currentQuery, currentPage, perPage);
             if (data.hits && data.hits.length > 0) {
-                appendImages(data.hits);
+                renderImages(data.hits, true);  // додаємо зображення до галереї
                 gallery.refresh();
 
                 const totalFetched = currentPage * perPage;
@@ -64,7 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     showLoadMoreButton();
 
-                    // Реалізація плавного скролу
                     const { height: cardHeight } = document
                         .querySelector('.gallery')
                         .firstElementChild.getBoundingClientRect();
@@ -84,25 +83,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
-function appendImages(images) {
-    const gallery = document.querySelector('.gallery');
-    if (!gallery) return;
-
-    gallery.insertAdjacentHTML(
-        'beforeend',
-        images.map(image => `
-            <a href="${image.largeImageURL}" class="gallery__link">
-                <div class="gallery__item">
-                    <img src="${image.webformatURL}" alt="${image.tags}" loading="lazy" />
-                    <div class="gallery__info">
-                        <p><b>Likes:</b> ${image.likes}</p>
-                        <p><b>Views:</b> ${image.views}</p>
-                        <p><b>Comments:</b> ${image.comments}</p>
-                        <p><b>Downloads:</b> ${image.downloads}</p>
-                    </div>
-                </div>
-            </a>
-        `).join('')
-    );
-}
