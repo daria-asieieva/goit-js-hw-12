@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = await fetchImages(currentQuery, currentPage, perPage);
             if (data.hits && data.hits.length > 0) {
-                renderImages(data.hits, true);  // додаємо зображення до галереї
+                renderImages(data.hits, true); 
                 gallery.refresh();
 
                 const totalFetched = currentPage * perPage;
