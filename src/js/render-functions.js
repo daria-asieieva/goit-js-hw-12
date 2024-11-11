@@ -38,3 +38,12 @@ export function showEndOfResultsMessage() {
   message.classList.add('end-of-results');
   document.querySelector('.gallery').appendChild(message);
 }
+
+export function showNotification(message) {
+  iziToast.show({
+    message,
+    position: 'topRight', 
+    color: 'blue', 
+    timeout: 3000, 
+  });
+}
