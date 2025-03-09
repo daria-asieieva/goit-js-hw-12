@@ -6,7 +6,8 @@ import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.querySelector('.search-form');
+    
+    const form = document.querySelector('.form');
     const loadMoreButton = document.querySelector('.load-more');
     const loaderElement = document.getElementById('loader');
     const gallery = new SimpleLightbox('.gallery a');
@@ -48,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = await fetchImages(currentQuery, currentPage, perPage);
             if (!data.hits || data.hits.length === 0) {
-                
+
                 showNotification('На жаль, немає зображень, що відповідають вашому пошуковому запиту. Спробуйте ще раз!');
             } else {
                 renderImages(data.hits);
@@ -84,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     showLoadMoreButton();
 
-                    // Плавне прокручування
+
                     const { height: cardHeight } = document
                         .querySelector('.gallery')
                         .firstElementChild.getBoundingClientRect();

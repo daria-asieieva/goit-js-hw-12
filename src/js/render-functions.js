@@ -4,7 +4,7 @@ import 'izitoast/dist/css/iziToast.min.css';
 export function renderImages(images) {
   const gallery = document.querySelector('.gallery');
   const markup = images.map(image => `
-    <div class="gallery__item">
+    <li class="gallery__item">
       <a href="${image.largeImageURL}">
         <img src="${image.webformatURL}" alt="${image.tags}" loading="lazy"/>
         <div class="gallery__info">
@@ -14,10 +14,10 @@ export function renderImages(images) {
           <p><b>Завантаження:</b> ${image.downloads}</p>
         </div>
       </a>
-    </div>
+    </li>
   `).join('');
 
-
+  
   gallery.insertAdjacentHTML('beforeend', markup);
 }
 
