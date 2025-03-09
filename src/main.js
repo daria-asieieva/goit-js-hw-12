@@ -1,11 +1,14 @@
 import { fetchImages } from './js/pixabay-api';
-import { renderImages, clearGallery, showNotification, toggleLoader } from './js/render-functions';
+import { renderImages, clearGallery } from './js/render-functions';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+import iziToast from 'izitoast';
+import 'izitoast/dist/css/iziToast.min.css';
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('.search-form');
     const loadMoreButton = document.querySelector('.load-more');
+    const loaderElement = document.getElementById('loader');
     const gallery = new SimpleLightbox('.gallery a');
 
     let currentPage = 1;
@@ -15,12 +18,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const hideLoadMoreButton = () => (loadMoreButton.style.display = 'none');
     const showLoadMoreButton = () => (loadMoreButton.style.display = 'block');
 
+    const toggleLoader = (show) => {
+        loaderElement.style.display = show ? 'block' : 'none';
+    };
+
+    const showNotification = (message) => {
+        iziToast.info({
+            title: '',
+            message: message,
+            position: 'topRight',
+            timeout: 3000
+        });
+    };
+
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
         currentQuery = event.currentTarget.elements.searchQuery.value.trim();
 
         if (currentQuery === '') {
-            showNotification('Please enter a search query');
+            showNotification('Будь ласка, введіть пошуковий запит');
             return;
         }
 
@@ -32,16 +48,20 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = await fetchImages(currentQuery, currentPage, perPage);
             if (!data.hits || data.hits.length === 0) {
-                showNotification('Sorry, there are no images matching your search query. Please try again!');
+                
+                showNotification('На жаль, немає зображень, що відповідають вашому пошуковому запиту. Спробуйте ще раз!');
             } else {
                 renderImages(data.hits);
                 gallery.refresh();
                 if (data.totalHits > perPage) {
                     showLoadMoreButton();
                 }
+
+
+                showNotification(`Ура! Ми знайшли ${data.totalHits} зображень.`);
             }
         } catch (error) {
-            showNotification('An error occurred while fetching images. Please try again later.');
+            showNotification('Сталася помилка під час отримання зображень. Спробуйте пізніше.');
         } finally {
             toggleLoader(false);
         }
@@ -55,15 +75,16 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = await fetchImages(currentQuery, currentPage, perPage);
             if (data.hits && data.hits.length > 0) {
-                renderImages(data.hits, true);  // додаємо зображення до галереї
+                renderImages(data.hits);
                 gallery.refresh();
 
                 const totalFetched = currentPage * perPage;
                 if (totalFetched >= data.totalHits) {
-                    showNotification("We're sorry, but you've reached the end of search results.");
+                    showNotification("Вибачте, але ви досягли кінця результатів пошуку.");
                 } else {
                     showLoadMoreButton();
 
+                    // Плавне прокручування
                     const { height: cardHeight } = document
                         .querySelector('.gallery')
                         .firstElementChild.getBoundingClientRect();
@@ -74,10 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
             } else {
-                showNotification("We're sorry, but you've reached the end of search results.");
+                showNotification("Вибачте, але ви досягли кінця результатів пошуку.");
             }
         } catch (error) {
-            showNotification('An error occurred while loading more images. Please try again.');
+            showNotification('Сталася помилка під час завантаження додаткових зображень. Спробуйте ще раз.');
         } finally {
             toggleLoader(false);
         }
